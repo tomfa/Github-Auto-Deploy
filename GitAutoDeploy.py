@@ -42,7 +42,7 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
                     self.deploy(path)
             self.respond_success()
         except:
-            self.respons_failure()
+            self.respond_failure()
 
     def parseRequest(self):
         length = int(self.headers.getheader('content-length'))
@@ -67,8 +67,9 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
 
-    def respons_failure(self):
+    def respond_failure(self):
         self.send_response(500)
+        self.send_header('Content-type', 'text/plain')
         self.end_headers()        
 
     def pull(self, path):
