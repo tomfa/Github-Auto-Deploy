@@ -34,11 +34,15 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
 
     def do_POST(self):
         urls = self.parseRequest()
-        for url in urls:
-            paths = self.getMatchingPaths(url)
-            for path in paths:
-                self.pull(path)
-                self.deploy(path)
+        try:
+            for url in urls:
+                paths = self.getMatchingPaths(url)
+                for path in paths:
+                    self.pull(path)
+                    self.deploy(path)
+            self.respond_success()
+        except:
+            self.respons_failure()
 
     def parseRequest(self):
         length = int(self.headers.getheader('content-length'))
@@ -58,10 +62,14 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
                 res.append(repository['path'])
         return res
 
-    def respond(self):
+    def respond_success(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
+
+    def respons_failure(self):
+        self.send_response(500)
+        self.end_headers()        
 
     def pull(self, path):
         if(not self.quiet):
