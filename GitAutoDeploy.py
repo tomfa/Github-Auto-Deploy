@@ -36,15 +36,15 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
             url_refs = self.parseRequest()
-            for url, ref in url_refs:
-                paths = self.getMatchingPaths(url, ref)
-                for path in paths:
-                    self.pull(path)
-                    self.deploy(path)
             self.respond_success()
         except Exception as e:
             self.respond_failure(500)
             print e
+        for url, ref in url_refs:
+            paths = self.getMatchingPaths(url, ref)
+            for path in paths:
+                self.pull(path)
+                self.deploy(path)
 
     def parseRequest(self):
         length = int(self.headers.getheader('content-length'))
