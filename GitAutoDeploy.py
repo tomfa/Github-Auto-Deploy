@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json, urlparse, sys, os
+import json, urlparse, sys, os, hashlib, hmac
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from subprocess import call
 
@@ -41,18 +41,36 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
                     self.pull(path)
                     self.deploy(path)
             self.respond_success()
-        except:
-            self.respond_failure()
+        except Exception as e:
+            self.respond_failure(500)
+            print e
 
     def parseRequest(self):
         length = int(self.headers.getheader('content-length'))
+        xhub_signature = self.headers.getheader('X-Hub-Signature')[5:]
         body = self.rfile.read(length)
         post = urlparse.parse_qs(body)
         items = []
+        if not self.validate(
+            body, 
+            self.getConfig().get('secret', ''), 
+            xhub_signature):
+            print "Invalid signature"
+            self.respond_failure(403)
+            return items
+
         for itemString in post['payload']:
             item = json.loads(itemString)
             items.append((item['repository']['url'], item['ref']))
         return items
+
+    def validate(self, data, secret, signature):
+        if not secret:
+            return True
+        hm = hmac.new(str(secret), str(data), hashlib.sha1)
+        if hm.hexdigest() != signature:
+            return False
+        return True
 
     def getMatchingPaths(self, repoUrl, ref):
         res = []
@@ -68,8 +86,8 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
 
-    def respond_failure(self):
-        self.send_response(500)
+    def respond_failure(self, error_code=500):
+        self.send_response(error_code)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()        
 

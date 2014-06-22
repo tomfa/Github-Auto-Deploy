@@ -1,6 +1,7 @@
 {
 	"port": 8001, 
-	"repositories": 
+	"secret": "",
+        "repositories": 
 	[{
 		"url": "https://github.com/logsol/Test-Repo", 
 		"path": "/home/logsol/projects/Test-Repo",
