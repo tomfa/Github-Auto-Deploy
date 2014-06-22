@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#coding: utf-8
 
 import json, urlparse, sys, os, hashlib, hmac
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -77,7 +78,7 @@ class GitAutoDeploy(BaseHTTPRequestHandler):
         config = self.getConfig()
         for repository in config['repositories']:
             if (repository['url'] == repoUrl and 
-                repository.get('ref', '') in ('', ref)):
+                repository.get('ref', '') in ref):
                 res.append(repository['path'])
         return res
 
